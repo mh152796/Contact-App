@@ -38,7 +38,9 @@ dependencies:
   sqflite:
   provider:
   image_picker:
+  url_launcher:
   path:
+  google_mlkit_text_recognition:
 
 
 dev_dependencies:

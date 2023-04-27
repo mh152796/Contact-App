@@ -1,7 +1,9 @@
 import 'package:contact_app/db/dbhelper.dart';
 import 'package:contact_app/models/contact_model.dart';
+import 'package:contact_app/providers/contact_provider.dart';
 import 'package:contact_app/utils/helper_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../db/temp_db.dart';
 
 class ContactFormPage extends StatefulWidget {
@@ -160,16 +162,15 @@ class _ContactFormPageState extends State<ContactFormPage> {
         website: webController.text,
         email: emailController.text,
       );
-      //contactList.add(contact);
-      DbHelper().insert(contact).then((newRowId){
-        if(newRowId > 0)
-          {
-            showMsg(context, 'Saved');
-            contact.id = newRowId;
-            Navigator.pop(context, contact);
-
-          }
-      }).catchError((onError){
+      Provider.of<ContactProvider>(context, listen: false)
+          .insert(contact)
+          .then((newRowId) {
+        if (newRowId > 0) {
+          showMsg(context, 'Saved');
+          contact.id = newRowId;
+          Navigator.pop(context, contact);
+        }
+      }).catchError((onError) {
         showMsg(context, 'Failed to save');
         print(onError);
       });

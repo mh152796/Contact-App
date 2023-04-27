@@ -2,7 +2,10 @@ import 'package:contact_app/db/dbhelper.dart';
 import 'package:contact_app/models/contact_model.dart';
 import 'package:contact_app/pages/contact_details_page.dart';
 import 'package:contact_app/pages/contact_form_page.dart';
+import 'package:contact_app/providers/contact_provider.dart';
+import 'package:contact_app/utils/helper_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../db/temp_db.dart';
 
 class ContactHomePage extends StatefulWidget {
@@ -13,14 +16,16 @@ class ContactHomePage extends StatefulWidget {
 }
 
 class _ContactHomePageState extends State<ContactHomePage> {
-  List<ContactModel> contactList = [];
-  late DbHelper dbHelper;
   int selectedIndex = 0;
+  bool isFirst = true;
 
   @override
-  void initState() {
-    _getContacts();
-    super.initState();
+  void didChangeDependencies() {
+    if (isFirst) {
+      Provider.of<ContactProvider>(context, listen: false).getAllContacts();
+    }
+    isFirst = false;
+    super.didChangeDependencies();
   }
 
   @override
@@ -46,72 +51,102 @@ class _ContactHomePageState extends State<ContactHomePage> {
           unselectedItemColor: Colors.white70,
           backgroundColor: Theme.of(context).primaryColor,
           items: [
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'All',),
-            BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favorites',),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'All',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.favorite),
+              label: 'Favorites',
+            ),
           ],
         ),
       ),
-      body: ListView.builder(
-        itemCount: contactList.length,
-        itemBuilder: (context, index) {
-          final contact = contactList[index];
+      body: Consumer<ContactProvider>(
+        builder: (context, provider, child) => ListView.builder(
+          itemCount: provider.contactList.length,
+          itemBuilder: (context, index) {
+            final contact = provider.contactList[index];
 
-          return ListTile(
-              onTap: () {
-                Navigator.pushNamed(context, ContactDetailsPage.routeName,
-                    arguments: contact);
+            return Dismissible(
+              key: UniqueKey(),
+              background: Container(
+                padding: EdgeInsets.only(right: 20),
+                color: Colors.red,
+                child: Icon(
+                  Icons.delete,
+                  color: Colors.white,
+                ),
+                alignment: Alignment.centerRight,
+              ),
+              onDismissed: (_) async{
+                await provider.deleteContact(contact.id);
+                showMsg(context, 'Deleted');
               },
-              title: Text(contact.contactName),
-              trailing: IconButton(
-                onPressed: () {
-
-                  final value = contact.favorite ? 0 : 1;
-                  dbHelper.updateContactField(contact.id, {tblContactColFavorite: value}).then((value)
-                  {
-                    setState(() {
-                      contact.favorite = !contact.favorite;
-                      _getContacts();
-                    });
-                  });
-
-
-                },
-                icon: Icon(
-                    contact.favorite ? Icons.favorite : Icons.favorite_border),
-              ));
-        },
+              confirmDismiss: showConfirmationDialog,
+              direction: DismissDirection.endToStart,
+              child: ListTile(
+                  onTap: () {
+                    Navigator.pushNamed(context, ContactDetailsPage.routeName,
+                        arguments: contact);
+                  },
+                  title: Text(contact.contactName),
+                  trailing: IconButton(
+                    onPressed: () {
+                      final value = contact.favorite ? 0 : 1;
+                      provider.updateContactField(
+                          contact, value);
+                    },
+                    icon: Icon(contact.favorite
+                        ? Icons.favorite
+                        : Icons.favorite_border),
+                  )),
+            );
+          },
+        ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-         final contact = await Navigator.pushNamed(context, ContactFormPage.routeName);
-          setState(() {
-            if(contact != null){
-          contactList.add(contact as ContactModel);
-            }
-          });
-        },
-        child: Icon(Icons.add),
+      floatingActionButton: Consumer<ContactProvider>(
+        builder: (context, provider, child) => FloatingActionButton(
+          onPressed: () {
+            Navigator.pushNamed(context, ContactFormPage.routeName);
+          },
+          child: const Icon(Icons.add),
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
   void _getContacts() {
-    if(selectedIndex==0){
-      dbHelper = DbHelper();
-      dbHelper.getAllContacts().then((value) {
-        setState(() {
-          contactList = value;
-        });
-      });
+    if (selectedIndex == 0) {
+      Provider.of<ContactProvider>(context, listen: false).getAllContacts();
+    } else {
+      Provider.of<ContactProvider>(context, listen: false)
+          .getAllFavoriteContacts();
     }
-    else{
-      dbHelper = DbHelper();
-      dbHelper.getAllFavoriteContacts().then((value) {
-        setState(() {
-          contactList = value;
-        });
-      });
-    }
+  }
+
+  Future<bool?> showConfirmationDialog(DismissDirection direction) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Delete Contact"),
+          content: Text("Are you sure to delete this Contact"),
+          actions: [
+            OutlinedButton(
+                onPressed: () {
+                  Navigator.pop(context, false);
+                },
+                child: Text("No")),
+            OutlinedButton(
+                onPressed: () {
+                  Navigator.pop(context, true);
+                },
+                child: Text("Yes")),
+          ],
+        );
+      },
+    );
   }
 }

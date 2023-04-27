@@ -8,6 +8,7 @@ const String tblContactColWebsite = 'website';
 const String tblContactColImage = 'image';
 const String tblContactColCompany = 'company';
 const String tblContactColDesignation = 'designation';
+const String tblContactColFax = 'fax';
 const String tblContactColFavorite= 'favorite';
 
 class ContactModel {
@@ -19,6 +20,7 @@ class ContactModel {
   String designation;
   String website;
   String image;
+  String fax;
   String company;
   bool favorite;
 
@@ -30,6 +32,7 @@ class ContactModel {
       this.designation = '',
       this.favorite = false,
       this.address = '',
+      this.fax = '',
       this.website = '',
       this.image = 'images/person.png',
       this.company = ''});
@@ -45,6 +48,7 @@ class ContactModel {
        designation: map[tblContactColDesignation],
        company: map[tblContactColCompany],
        image: map[tblContactColImage],
+       fax: map[tblContactColFax] ?? '',
        favorite: map[tblContactColFavorite] == 0 ? false : true,
 
    );
@@ -60,6 +64,7 @@ class ContactModel {
       tblContactColAddress : address,
       tblContactColWebsite : website,
       tblContactColImage : image,
+      tblContactColFax : fax,
       tblContactColFavorite : favorite? 1 : 0,
     };
     if(id > 0){

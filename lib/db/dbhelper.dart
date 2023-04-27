@@ -12,6 +12,7 @@ class DbHelper {
   $tblContactColCompany text,
   $tblContactColDesignation text,
   $tblContactColWebsite text,
+  $tblContactColFax text,
   $tblContactColFavorite integer,
   $tblContactColImage text)''';
 
@@ -21,9 +22,14 @@ class DbHelper {
 
     return openDatabase(
       dbPath,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute(_createTableContact);
+      },
+      onUpgrade: (db, oldVersion, newVersion) {
+          if(newVersion == true){
+            db.execute('alter table $tableContact add column $tblContactColFax text non null default ""');
+          }
       },
     );
   }
@@ -42,7 +48,8 @@ class DbHelper {
 
   Future<List<ContactModel>> getAllFavoriteContacts() async {
     final db = await _open();
-    final mapList = await db.query(tableContact, where: '$tblContactColFavorite = ?', whereArgs: [1]);
+    final mapList = await db.query(tableContact,
+        where: '$tblContactColFavorite = ?', whereArgs: [1]);
     return List.generate(
         mapList.length, (index) => ContactModel.formMap(mapList[index]));
   }
@@ -57,8 +64,13 @@ class DbHelper {
 
   Future<int> updateContactField(int id, Map<String, dynamic> map) async {
     final db = await _open();
-    final update = db.update(tableContact, map,
+    return db.update(tableContact, map,
         where: '$tblContactColId = ?', whereArgs: [id]);
-    return update;
+  }
+
+  Future<int> deleteContact(int id) async {
+    final db = await _open();
+    return db
+        .delete(tableContact, where: '$tblContactColId = ?', whereArgs: [id]);
   }
 }

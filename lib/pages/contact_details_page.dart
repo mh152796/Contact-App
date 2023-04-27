@@ -1,4 +1,8 @@
+import 'dart:io';
+
+import 'package:contact_app/utils/helper_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../models/contact_model.dart';
 
@@ -40,25 +44,83 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(onPressed: () {}, icon: Icon(Icons.sms)),
-                IconButton(onPressed: () {}, icon: Icon(Icons.call)),
+                IconButton(onPressed: _smsContact, icon: Icon(Icons.sms)),
+                IconButton(onPressed: _callContact, icon: Icon(Icons.call)),
               ],
             ),
           ),
           ListTile(
             title: Text(contact.email.isEmpty ? 'Not Found' : contact.email),
-            trailing: IconButton(onPressed: () {}, icon: Icon(Icons.email)),
+            trailing: IconButton(onPressed: _emailContact, icon: Icon(Icons.email)),
           ),
           ListTile(
-            title: Text(contact.address.isEmpty ? 'Not Found' : contact.email),
-            trailing: IconButton(onPressed: () {}, icon: Icon(Icons.map)),
+            title: Text(contact.address.isEmpty ? 'Not Found' : contact.address),
+            trailing: IconButton(onPressed: _openMap, icon: Icon(Icons.map)),
           ),
           ListTile(
-            title: Text(contact.website.isEmpty ? 'Not Found' : contact.email),
+            title: Text(contact.website.isEmpty ? 'Not Found' : contact.website),
             trailing: IconButton(onPressed: () {}, icon: Icon(Icons.web)),
           ),
         ],
       ),
     );
+  }
+
+  void _callContact() async{
+    final url = 'tel:${contact.mobile}';
+    if(await canLaunchUrlString(url)){
+
+      await launchUrlString(url);
+    }
+    else{
+      showMsg(context, 'Cannot perform this operation');
+    }
+  }
+
+  void _smsContact() async{
+    final url = 'sms:${contact.mobile}';
+
+    if(await canLaunchUrlString(url)){
+
+    await launchUrlString(url);
+    }
+    else{
+    showMsg(context, 'Cannot perform this operation');
+    }
+  }
+
+  void _emailContact() async{
+    if(contact.email.isEmpty) return;
+
+    final url = 'mailto:${contact.email}';
+
+    if(await canLaunchUrlString(url)){
+
+      await launchUrlString(url);
+    }
+    else{
+      showMsg(context, 'Cannot perform this operation');
+    }
+
+  }
+
+  void _openMap() async {
+    var url = '';
+    if(Platform.isAndroid){
+ url = 'geo:0,0?q=${contact.address}';
+    }
+    else if(Platform.isIOS){
+      url = 'http://maps.apple.com/?q=${contact.address}';
+    }
+
+    if(await canLaunchUrlString(url)){
+
+      await launchUrlString(url);
+    }
+    else{
+      showMsg(context, 'Cannot perform this operation');
+    }
+
+
   }
 }
