@@ -1,5 +1,6 @@
 import 'package:contact_app/db/dbhelper.dart';
 import 'package:contact_app/models/contact_model.dart';
+import 'package:contact_app/pages/contact_home_page.dart';
 import 'package:contact_app/providers/contact_provider.dart';
 import 'package:contact_app/utils/helper_functions.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,20 @@ class _ContactFormPageState extends State<ContactFormPage> {
   final companyController = TextEditingController();
   final webController = TextEditingController();
   final addressController = TextEditingController();
+  late ContactModel contact;
+
+  @override
+  void didChangeDependencies() {
+    contact = ModalRoute.of(context)!.settings.arguments as ContactModel;
+    nameController.text = contact.contactName;
+    mobileController.text = contact.mobile;
+    emailController.text = contact.email;
+    designationController.text = contact.designation;
+    companyController.text = contact.company;
+    webController.text = contact.website;
+    addressController.text = contact.address;
+    super.didChangeDependencies();
+  }
 
   @override
   void dispose() {
@@ -39,7 +54,7 @@ class _ContactFormPageState extends State<ContactFormPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Contact Form'),
+        title: Text('New Contact'),
         actions: [
           IconButton(
             onPressed: _saveContact,
@@ -137,7 +152,7 @@ class _ContactFormPageState extends State<ContactFormPage> {
             TextFormField(
               controller: designationController,
               decoration: InputDecoration(
-                labelText: 'Designature',
+                labelText: 'Designation',
                 filled: true,
                 prefixIcon: Icon(Icons.person),
               ),
@@ -153,26 +168,34 @@ class _ContactFormPageState extends State<ContactFormPage> {
 
   _saveContact() {
     if (formKey.currentState!.validate()) {
-      final contact = ContactModel(
-        contactName: nameController.text,
-        mobile: mobileController.text,
-        address: addressController.text,
-        company: companyController.text,
-        designation: designationController.text,
-        website: webController.text,
-        email: emailController.text,
-      );
+      contact.contactName = nameController.text;
+      contact.mobile = mobileController.text;
+      contact.email = emailController.text;
+      contact.designation = designationController.text;
+      contact.company = companyController.text;
+      contact.website = webController.text;
+      contact.address = addressController.text;
+      // final contact = ContactModel(
+      //   contactName: nameController.text,
+      //   mobile: mobileController.text,
+      //   address: addressController.text,
+      //   company: companyController.text,
+      //   designation: designationController.text,
+      //   website: webController.text,
+      //   email: emailController.text,
+      // );
       Provider.of<ContactProvider>(context, listen: false)
           .insert(contact)
           .then((newRowId) {
         if (newRowId > 0) {
           showMsg(context, 'Saved');
           contact.id = newRowId;
-          Navigator.pop(context, contact);
+          Navigator.popUntil(
+              context, ModalRoute.withName(ContactHomePage.routeName));
         }
-      }).catchError((onError) {
+      }).catchError((error) {
+        print(error.toString());
         showMsg(context, 'Failed to save');
-        print(onError);
       });
     }
   }

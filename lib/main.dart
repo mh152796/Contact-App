@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'pages/contact_form_page.dart';
 import 'pages/contact_home_page.dart';
+import 'pages/scan_page.dart';
 import 'providers/contact_provider.dart';
 
 void main() {
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
         ContactHomePage.routeName: (context) => ContactHomePage(),
         ContactDetailsPage.routeName: (context) => ContactDetailsPage(),
         ContactFormPage.routeName: (context) => ContactFormPage(),
+        ScanPage.routeName : (context) => ScanPage(),
       },
     );
   }

@@ -25,10 +25,13 @@ class ContactProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateContactField(ContactModel contactModel, int value) async{
+  Future<void> updateContactField(ContactModel contactModel, int value, int selectedIndex) async{
     await helper.updateContactField(contactModel.id, {tblContactColFavorite : value});
     final index = contactList.indexOf(contactModel);
     contactList[index].favorite =! contactList[index].favorite;
+    if(selectedIndex != 0){
+      contactList.removeAt(index);
+    }
     notifyListeners();
   }
   Future<void> deleteContact(int id) async{

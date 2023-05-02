@@ -7,6 +7,7 @@ import 'package:contact_app/utils/helper_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../db/temp_db.dart';
+import 'scan_page.dart';
 
 class ContactHomePage extends StatefulWidget {
   static const String routeName = '/';
@@ -95,7 +96,7 @@ class _ContactHomePageState extends State<ContactHomePage> {
                     onPressed: () {
                       final value = contact.favorite ? 0 : 1;
                       provider.updateContactField(
-                          contact, value);
+                          contact, value,selectedIndex);
                     },
                     icon: Icon(contact.favorite
                         ? Icons.favorite
@@ -108,7 +109,7 @@ class _ContactHomePageState extends State<ContactHomePage> {
       floatingActionButton: Consumer<ContactProvider>(
         builder: (context, provider, child) => FloatingActionButton(
           onPressed: () {
-            Navigator.pushNamed(context, ContactFormPage.routeName);
+            Navigator.pushNamed(context, ScanPage.routeName);
           },
           child: const Icon(Icons.add),
         ),

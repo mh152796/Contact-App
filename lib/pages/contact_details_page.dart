@@ -33,9 +33,10 @@ class _ContactDetailsPageState extends State<ContactDetailsPage> {
       ),
       body: ListView(
         children: [
-          Image.asset(
-            contact.image, width: double.infinity, height: 250, fit: BoxFit.cover,
-          ),
+          Image.file(File(contact.image), width: double.infinity, height: 250, fit: BoxFit.cover,),
+          // Image.asset(
+          //   contact.image, width: double.infinity, height: 250, fit: BoxFit.cover,
+          // ),
           ListTile(
             title: Text(contact.contactName),
           ),
